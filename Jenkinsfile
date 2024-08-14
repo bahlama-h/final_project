@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         AWS_CREDENTIALS = credentials('aws-credentials') // Replace 'aws-credentials' with your Jenkins Credentials ID
-        VERSION = "1.0.${env.BUILD_ID}"
+        VERSION = "3.0.${env.BUILD_ID}"
         IMAGE_NAME = "bahmah2024/browny-app"
     }
 
