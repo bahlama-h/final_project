@@ -8,7 +8,7 @@ pipeline {
 
     parameters {
         string(name: 'BRANCH', defaultValue: 'main', description: 'Git branch to build')
-        choice(name: 'ENVIRONMENT', choices: ['dev', 'staging', 'prod'], description: 'Deployment environment')
+        choice(name: 'ENVIRONMENT', choices: ['dev', 'sit'], description: 'Deployment environment') // Updated choices
     }
 
     environment {
