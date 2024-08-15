@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'docker:24.0.6' // Custom image with Docker, Terraform, and other necessary tools
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
+            image 'docker:24.0.6' // Custom image with Docker and Buildx tools
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/jenkins/.docker:/root/.docker' // Ensure Docker configuration is accessible
         }
     }
 
@@ -13,7 +13,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        AWS_CREDENTIALS = credentials('aws credentials')
+        AWS_CREDENTIALS = credentials('aws-credentials')
         TELEGRAM_CHAT_ID = credentials('telegram-chat-id')
         VERSION = "1.0.${env.BUILD_ID}"
         IMAGE_NAME = "bahmah2024/browny-app"
@@ -30,8 +30,11 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Verify Docker Buildx installation
-                        sh 'docker buildx version'
+                        // Set environment variables for Docker Buildx
+                        sh 'export DOCKER_BUILDKIT=1'
+                        sh 'export DOCKER_CONFIG=/var/lib/jenkins/.docker'
+                        
+                        // Create and use Buildx
                         sh 'docker buildx create --use'
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
