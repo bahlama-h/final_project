@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'custom/jenkins-agent:latest' // Custom image with Docker, Terraform, and other necessary tools
+            image 'docker:24.0.6' // Custom image with Docker, Terraform, and other necessary tools
             args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
