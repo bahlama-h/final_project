@@ -1,10 +1,16 @@
 pipeline {
-    agent any
+    agent {
+        // Using a Docker agent with Docker installed
+        docker {
+            image 'docker:27.1.1' // Replace with a Docker image that has Docker installed if needed
+            args '--privileged' // Allows the Docker container to run in a privileged mode, which is needed for Docker-in-Docker
+        }
+    }
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        AWS_CREDENTIALS = credentials('aws credentials') // Replace 'aws-credentials' with your Jenkins Credentials ID
-        VERSION = "3.0.${env.BUILD_ID}"
+        AWS_CREDENTIALS = credentials('aws-credentials')
+        VERSION = "1.0.${env.BUILD_ID}"
         IMAGE_NAME = "bahmah2024/browny-app"
     }
 
@@ -15,16 +21,18 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Setup Docker Buildx') {
             steps {
                 script {
                     sh 'docker buildx create --use'
-                    sh """
-                        docker buildx build --platform linux/amd64,linux/arm64 \\
-                        -t ${env.IMAGE_NAME}:${env.VERSION} \\
-                        --push \\
-                        ./microservice/browny-app
-                    """
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${env.IMAGE_NAME}:${env.VERSION}", "./microservice/browny-app")
                 }
             }
         }
@@ -42,14 +50,7 @@ pipeline {
         stage('Terraform Init') {
             steps {
                 dir('Terraform_final') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-credentials', // Your AWS Credentials ID
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh 'terraform init'
-                    }
+                    sh 'terraform init'
                 }
             }
         }
@@ -57,14 +58,7 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 dir('Terraform_final') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-credentials', // Your AWS Credentials ID
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh 'terraform plan -var-file=en_vars/dev.tfvars'
-                    }
+                    sh 'terraform plan -var-file=en_vars/dev.tfvars'
                 }
             }
         }
@@ -72,14 +66,7 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('Terraform_final') {
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: 'aws-credentials', // Your AWS Credentials ID
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh 'terraform apply -var-file=en_vars/dev.tfvars -auto-approve'
-                    }
+                    sh 'terraform apply -var-file=en_vars/dev.tfvars -auto-approve'
                 }
             }
         }
@@ -87,25 +74,14 @@ pipeline {
 
     post {
         success {
-            emailext(
-                to: 'bah260619@gmail.com',
-                subject: "SUCCESS: Job '${env.JOB_NAME}' (${env.BUILD_NUMBER})",
-                body: "Good news! The job '${env.JOB_NAME}' completed successfully. \n\nBuild details: ${env.BUILD_URL}"
-            )
+            mail to: 'bah260619@gmail.com',
+                 subject: "Jenkins Build Successful: ${env.JOB_NAME} ${env.BUILD_NUMBER}",
+                 body: "Good news! The Jenkins job ${env.JOB_NAME} build number ${env.BUILD_NUMBER} has succeeded."
         }
         failure {
-            emailext(
-                to: 'bah260619@gmail.com',
-                subject: "FAILURE: Job '${env.JOB_NAME}' (${env.BUILD_NUMBER})",
-                body: "Unfortunately, the job '${env.JOB_NAME}' failed. \n\nBuild details: ${env.BUILD_URL}"
-            )
-        }
-        always {
-            emailext(
-                to: 'bah260619@gmail.com',
-                subject: "Notification: Job '${env.JOB_NAME}' (${env.BUILD_NUMBER})",
-                body: "The job '${env.JOB_NAME}' has finished with the status: ${currentBuild.currentResult}. \n\nBuild details: ${env.BUILD_URL}"
-            )
+            mail to: 'bah260619@gmail.com',
+                 subject: "Jenkins Build Failed: ${env.JOB_NAME} ${env.BUILD_NUMBER}",
+                 body: "Unfortunately, the Jenkins job ${env.JOB_NAME} build number ${env.BUILD_NUMBER} has failed. Please check the Jenkins console for more details."
         }
     }
 }
