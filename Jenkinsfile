@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'docker:24.0.6' // Custom image with Docker and Buildx tools
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/jenkins/.docker:/root/.docker' // Ensure Docker configuration is accessible
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Ensure Docker configuration is accessible
         }
     }
 
@@ -17,6 +17,7 @@ pipeline {
         TELEGRAM_CHAT_ID = credentials('telegram-chat-id')
         VERSION = "1.0.${env.BUILD_ID}"
         IMAGE_NAME = "bahmah2024/browny-app"
+        DOCKER_CONFIG = "${env.WORKSPACE}/.docker" // Custom Docker config directory within workspace
     }
 
     stages {
@@ -30,10 +31,15 @@ pipeline {
             steps {
                 script {
                     try {
+                        // Set a custom Docker config directory within the Jenkins workspace
+                        env.DOCKER_CONFIG = "${env.WORKSPACE}/.docker"
+
+                        // Create the custom Docker config directory
+                        sh 'mkdir -p $DOCKER_CONFIG'
+
                         // Set environment variables for Docker Buildx
                         sh 'export DOCKER_BUILDKIT=1'
-                        sh 'export DOCKER_CONFIG=/var/lib/jenkins/.docker'
-                        
+
                         // Create and use Buildx
                         sh 'docker buildx create --use'
                     } catch (Exception e) {
