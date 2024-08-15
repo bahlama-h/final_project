@@ -71,7 +71,7 @@ pipeline {
         }
     }
  
-   post {
+    post {
     success {
         telegramSend(
             message: "✅ *Jenkins Build Successful*\nJob: `${env.JOB_NAME}`\nBuild: `#${env.BUILD_NUMBER}`\n\nGood news! The Jenkins job has succeeded.",
