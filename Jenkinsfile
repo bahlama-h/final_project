@@ -8,7 +8,7 @@ pipeline {
 
     parameters {
         string(name: 'BRANCH', defaultValue: 'main', description: 'Git branch to build')
-        choice(name: 'ENVIRONMENT', choices: ['dev', 'sit'], description: 'Deployment environment') // Updated choices
+        choice(name: 'ENVIRONMENT', choices: ['dev', 'sit'], description: 'Deployment environment')
     }
 
     environment {
@@ -30,6 +30,8 @@ pipeline {
             steps {
                 script {
                     try {
+                        // Verify Docker Buildx installation
+                        sh 'docker buildx version'
                         sh 'docker buildx create --use'
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
