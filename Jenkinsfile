@@ -70,17 +70,18 @@ pipeline {
             }
         }
     }
-
-    post {
-        success {
-            mail to: 'bah260619@gmail.com',
-                 subject: "Jenkins Build Successful: ${env.JOB_NAME} ${env.BUILD_NUMBER}",
-                 body: "Good news! The Jenkins job ${env.JOB_NAME} build number ${env.BUILD_NUMBER} has succeeded."
-        }
-        failure {
-            mail to: 'bah260619@gmail.com',
-                 subject: "Jenkins Build Failed: ${env.JOB_NAME} ${env.BUILD_NUMBER}",
-                 body: "Unfortunately, the Jenkins job ${env.JOB_NAME} build number ${env.BUILD_NUMBER} has failed. Please check the Jenkins console for more details."
-        }
+ 
+   post {
+    success {
+        telegramSend(
+            message: "✅ *Jenkins Build Successful*\nJob: `${env.JOB_NAME}`\nBuild: `#${env.BUILD_NUMBER}`\n\nGood news! The Jenkins job has succeeded.",
+            chatId: env.TELEGRAM_CHAT_ID
+        )
+    }
+    failure {
+        telegramSend(
+            message: "❌ *Jenkins Build Failed*\nJob: `${env.JOB_NAME}`\nBuild: `#${env.BUILD_NUMBER}`\n\nUnfortunately, the Jenkins job has failed. Please check the Jenkins console for more details.",
+            chatId: env.TELEGRAM_CHAT_ID
+        )
     }
 }
