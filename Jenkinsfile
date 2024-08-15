@@ -1,9 +1,8 @@
 pipeline {
     agent {
-        // Using a Docker agent with Docker installed
         docker {
-            image 'docker:27.1.1' // Replace with a Docker image that has Docker installed if needed
-            args '--privileged' // Allows the Docker container to run in a privileged mode, which is needed for Docker-in-Docker
+            image 'docker:24.0.6' // You can replace this with the specific version of Docker you want
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
