@@ -13,7 +13,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        AWS_CREDENTIALS = credentials('aws credentials')
+        AWS_CREDENTIALS = credentials('aws-credentials')
         TELEGRAM_CHAT_ID = credentials('telegram-chat-id')
         VERSION = "1.0.${env.BUILD_ID}"
         IMAGE_NAME = "bahmah2024/browny-app"
@@ -143,16 +143,28 @@ pipeline {
 
     post {
         success {
-            telegramSend(
-                message: "✅ *Jenkins Build Successful*\nJob: `${env.JOB_NAME}`\nBuild: `#${env.BUILD_NUMBER}`\nEnvironment: ${params.ENVIRONMENT}\n\nGood news! The Jenkins job has succeeded.",
-                chatId: env.TELEGRAM_CHAT_ID
-            )
+            script {
+                try {
+                    telegramSend(
+                        message: "✅ *Jenkins Build Successful*\nJob: `${env.JOB_NAME}`\nBuild: `#${env.BUILD_NUMBER}`\nEnvironment: ${params.ENVIRONMENT}\n\nGood news! The Jenkins job has succeeded.",
+                        chatId: env.TELEGRAM_CHAT_ID
+                    )
+                } catch (Exception e) {
+                    echo "Failed to send success notification: ${e.message}"
+                }
+            }
         }
         failure {
-            telegramSend(
-                message: "❌ *Jenkins Build Failed*\nJob: `${env.JOB_NAME}`\nBuild: `#${env.BUILD_NUMBER}`\nEnvironment: ${params.ENVIRONMENT}\n\nUnfortunately, the Jenkins job has failed. Please check the Jenkins console for more details.",
-                chatId: env.TELEGRAM_CHAT_ID
-            )
+            script {
+                try {
+                    telegramSend(
+                        message: "❌ *Jenkins Build Failed*\nJob: `${env.JOB_NAME}`\nBuild: `#${env.BUILD_NUMBER}`\nEnvironment: ${params.ENVIRONMENT}\n\nUnfortunately, the Jenkins job has failed. Please check the Jenkins console for more details.",
+                        chatId: env.TELEGRAM_CHAT_ID
+                    )
+                } catch (Exception e) {
+                    echo "Failed to send failure notification: ${e.message}"
+                }
+            }
         }
     }
 }
