@@ -82,7 +82,7 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                dir('Final_assessment_project/Terraform_final') {
+                dir('Final_assessment_projet/Terraform_final') {
                     script {
                         try {
                             sh 'terraform init'
@@ -97,7 +97,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                dir('Final_assessment_project/Terraform_final') {
+                dir('Final_assessment_projet/Terraform_final') {
                     script {
                         try {
                             sh "terraform plan -var-file=en_vars/${params.ENVIRONMENT}.tfvars -out=tfplan"
@@ -121,7 +121,7 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                dir('Final_assessment_project/Terraform_final') {
+                dir('Final_assessment_projet/Terraform_final') {
                     script {
                         try {
                             sh 'terraform apply -auto-approve tfplan'
