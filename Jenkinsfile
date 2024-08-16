@@ -50,6 +50,26 @@ pipeline {
             }
         }
 
+        stage('Install Terraform') {
+            steps {
+                script {
+                    try {
+                        // Install Terraform if not already included in the Docker image
+                        sh '''
+                        apk add --no-cache wget unzip
+                        wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
+                        unzip terraform_1.5.0_linux_amd64.zip
+                        mv terraform /usr/local/bin/
+                        terraform --version
+                        '''
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to install Terraform: ${e.message}")
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
@@ -82,7 +102,7 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                dir('Final_assessment_projet/Terraform_final') {
+                dir('Final_assessment_projet/terraform') {
                     script {
                         try {
                             sh 'terraform init'
@@ -97,7 +117,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                dir('Final_assessment_projet/Terraform_final') {
+                dir('Final_assessment_projet/terraform') {
                     script {
                         try {
                             sh "terraform plan -var-file=en_vars/${params.ENVIRONMENT}.tfvars -out=tfplan"
@@ -121,7 +141,7 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                dir('Final_assessment_projet/Terraform_final') {
+                dir('Final_assessment_projet/terraform') {
                     script {
                         try {
                             sh 'terraform apply -auto-approve tfplan'
