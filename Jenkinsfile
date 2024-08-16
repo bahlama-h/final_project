@@ -31,10 +31,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Set a custom Docker config directory within the Jenkins workspace
-                        env.DOCKER_CONFIG = "${env.WORKSPACE}/.docker"
-
-                        // Create the custom Docker config directory
+                        // Create the custom Docker config directory within the workspace
                         sh 'mkdir -p $DOCKER_CONFIG'
 
                         // Set environment variables for Docker Buildx
@@ -54,7 +51,6 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Install Terraform if not already included in the Docker image
                         sh '''
                         apk add --no-cache wget unzip
                         wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
@@ -102,7 +98,7 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                dir('Final_assessment_projet/terraform') {
+                dir('terraform') {
                     script {
                         try {
                             sh 'terraform init'
@@ -117,7 +113,7 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                dir('Final_assessment_projet/terraform') {
+                dir('terraform') {
                     script {
                         try {
                             sh "terraform plan -var-file=en_vars/${params.ENVIRONMENT}.tfvars -out=tfplan"
@@ -141,7 +137,7 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                dir('Final_assessment_projet/terraform') {
+                dir('terraform') {
                     script {
                         try {
                             sh 'terraform apply -auto-approve tfplan'
