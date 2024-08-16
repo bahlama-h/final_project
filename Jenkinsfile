@@ -13,7 +13,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        AWS_CREDENTIALS = credentials('aws-credentials')
+        AWS_CREDENTIALS = credentials('aws credentials')
         TELEGRAM_CHAT_ID = credentials('telegram-chat-id')
         VERSION = "1.0.${env.BUILD_ID}"
         IMAGE_NAME = "bahmah2024/browny-app"
