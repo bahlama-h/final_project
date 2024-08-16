@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'docker:24.0.6' // Custom image with Docker and Buildx tools
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock' // Ensure Docker configuration is accessible
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""' // Ensure Docker configuration is accessible and override entrypoint
         }
     }
 
@@ -112,10 +112,10 @@ pipeline {
 
         stage('Approve Terraform Apply') {
             when { 
-                expression { params.ENVIRONMENT == 'prod' }
+                expression { params.ENVIRONMENT == 'dev' }
             }
             steps {
-                input "Deploy to Production?"
+                input "Deploy to Development?"
             }
         }
 
