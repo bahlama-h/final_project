@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'docker:24.0.6' // Custom image with Docker and Buildx tools
+            image 'bahmah2024/docker_image:latest' // Custom image with Docker and Terraform
             args '--privileged -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""' // Ensure Docker configuration is accessible and override entrypoint
         }
     }
@@ -42,25 +42,6 @@ pipeline {
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error("Failed to setup Docker Buildx: ${e.message}")
-                    }
-                }
-            }
-        }
-
-        stage('Install Terraform') {
-            steps {
-                script {
-                    try {
-                        sh '''
-                        apk add --no-cache wget unzip
-                        wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
-                        unzip terraform_1.5.0_linux_amd64.zip
-                        mv terraform /usr/local/bin/
-                        terraform --version
-                        '''
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error("Failed to install Terraform: ${e.message}")
                     }
                 }
             }
