@@ -131,6 +131,20 @@ pipeline {
             }
         }
 
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    try {
+                        // Run the Docker container
+                        sh 'docker run --rm -it ${env.IMAGE_NAME}:${env.VERSION} /bin/sh -c "echo Hello from the container!"'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Failed to run Docker container: ${e.message}")
+                    }
+                }
+            }
+        }
+
         stage('Cleanup') {
             steps {
                 sh 'docker system prune -f'
